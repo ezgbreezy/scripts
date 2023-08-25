@@ -15,13 +15,32 @@ After cloning or downloading the `openex.py` file, in MacOS, move `openex.py` to
 
 ## Running the command
 
-After downloading the Exercism exercise, navigate to the exercise directory in your CLI or IDE terminal and run `openex`:
+After downloading the Exercism exercise, navigate to the exercise directory in your CLI or IDE terminal and run `openex.py`:
 
-```bash
-exercise-name $ openex
+```zsh
+exercise-name $ openex.py
 ```
 
 This will open the aforementioned files in the default IDE or text editor on your machine. (i.e. VS Code, PyCharm, etc)
+
+To run it without the `.py` extension, create and/or edit your `.zshrc` file (assuming your running it in the default macOS zsh shell) and add at the end of the file `alias openex='/usr/local/bin/openex.py'`:
+
+```zsh
+$ sudo nano ~/.zshrc
+```
+
+Once in the nano text editor type or paste:
+
+```
+alias openex='/usr/local/bin/openex.py'
+```
+
+Hit `Control-X` to exit and `Y` then `Enter` to save the file. The terminal or CLI may need to be restarted for the changes to take effect. Afterwards you should be able to run the command using `openex`
+
+```zsh
+exercise-name $ openex
+```
+
 
 ## Things to be aware of: Edge cases
 
