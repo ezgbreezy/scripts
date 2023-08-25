@@ -3,7 +3,7 @@
 ![Static Badge](https://img.shields.io/badge/my_first_script-blue?style=flat)
 
 
-This is a simple script that opens the following files from an [Exercism Python track](exercism.io/track/python) exercise:
+This is a simple script that opens the following files from an [Exercism Python track](https://exercism.org/tracks/python) exercise:
 
     `README.md`
     `exercise_name.py`
