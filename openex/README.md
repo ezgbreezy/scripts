@@ -40,8 +40,3 @@ Hit `Control-X` to exit and `Y` then `Enter` to save the file. The terminal or C
 ```zsh
 exercise-name $ openex
 ```
-
-
-## Things to be aware of: Edge cases
-
-This script will return an error with a message that the file was not found if run in an exercise directory where the Python filename doesn't match the directory name, such as a learning exercise. (i.e. For the exercise *Card Games* the directory name is `card-games` but the filename is `lists.py` and test filename is `lists_test.py`)
