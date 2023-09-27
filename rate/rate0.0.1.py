@@ -1,7 +1,5 @@
 """Calculate day rates, overtime and payment.
-
-Version 0.1
-"""
+Version 0.1"""
 
 from sys import exit
 from datetime import datetime, timedelta
