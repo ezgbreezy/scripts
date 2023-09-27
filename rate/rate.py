@@ -1,5 +1,6 @@
-"""Classes for working with common film industry day rates with methods for overtime and payments.
-Version 0.0.3
+"""Module for working with common film industry day rates with methods for overtime and payments.
+
+Version 0.1.2
 - Introduces the Invoice class which replaces the pay() function
 - Timecard is no longer a subclass of Rate
 - Enables Rate object to be passed to Timecard class

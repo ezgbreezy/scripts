@@ -1,6 +1,8 @@
 """Calculate day rates, overtime and payment.
-Version 0.0.2
-- Introduces the Rate and Timecard classes which replace the imperative approach of Version 0.0.1"""
+
+Version 0.1.1
+- Switch approach to OOP paradigm
+- Introduces the Rate and Timecard classes and methods"""
 
 from sys import exit
 from datetime import datetime, timedelta
