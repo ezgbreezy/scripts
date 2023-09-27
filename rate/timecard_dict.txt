@@ -1,0 +1,16 @@
+Draft structure of `Timecard.times` structure dictionary. The following represents two days of times.
+{
+	date_obj: {
+			'in_time': datetime_obj, 
+			'lunch_in': datetime_obj, 
+			'lunch_out': datetime_obj, 
+			'out_time': datetime_obj
+		   }
+	date_obj: {
+			'in_time': datetime_obj, 
+			'lunch_in': datetime_obj, 
+			'lunch_out': datetime_obj, 
+			'out_time': datetime_obj
+		   }
+}
+	

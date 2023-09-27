@@ -1,168 +1,130 @@
-"""Calculate day rates, overtime and payment."""
-
-# TODO: Create a timecard class that can better organize these 
-# values and functions as attributes and methods
+"""Classes for working with common film industry day rates with methods for overtime and payments.
+Version 0.0.3
+- Introduces the Invoice class which replaces the pay() function
+- Timecard is no longer a subclass of Rate
+- Enables Rate object to be passed to Timecard class
+- Enables Timecard object to be passed to Invoice class
+- Adds __str__ methods to classes"""
 
 from sys import exit
 from datetime import datetime, timedelta
 
 STRAIGHT_TIME = timedelta(hours=8)
-GUAR_10 = timedelta(hours=10)
-GUAR_10_200 = timedelta(hours=12)
-GUAR_12 = timedelta(hours=12)
-GUAR_12_200 = timedelta(hours=14)
-ZERO = timedelta(hours=0)
-LUNCH = timedelta(minutes=30)
 FMT = '%H:%M'
 
 def main():
     try:
         day_rate = round(float(input("Enter day rate: ")), 2)
-        guaranteed = timedelta(hours=round(float(input("Enter guaranteee hours: ")), 0))
+        guarantee = timedelta(hours=round(float(input("Enter guaranteee hours: ")), 0))
     except ValueError:
         print("Enter numerical characters only.")
         exit()
 
-    rate_100 = get_rate(day_rate, guaranteed, 1)
-    rate_150 = get_rate(day_rate, guaranteed)
-    rate_200 = get_rate(day_rate, guaranteed, 2)
+    job_tc = Timecard(day_rate, guarantee)
 
-    in_time = datetime.strptime(input("IN time (HH:MM): "), FMT)
-    out_time = datetime.strptime(input("OUT time (HH:MM): "), FMT)
+    pay_150 = get_pay(job_tc.rate_150, job_tc.ot_150)
+    pay_200 = get_pay(job_tc.rate_200, job_tc.ot_200)
+    total_pay = round(job_tc.day_rate + pay_150 + pay_200, 2)
 
-    hours_worked = get_hours(in_time, out_time)
-    hours_150 = get_hours(in_time, out_time, guaranteed, 1.5)
-    hours_200 = get_hours(in_time, out_time, guaranteed, 2)
-    pay_150 = get_pay(rate_150, hours_150)
-    pay_200 = get_pay(rate_200, hours_200)
-    total_pay = round(day_rate + pay_150 + pay_200, 2)
-
-    print()
-    print("RATE STRUCTURE")
-    print(f"1x: {rate_100}")
-    print(f"1.5x: {rate_150}")
-    print(f"2x: {rate_200}")
-    print()
-    print("HOURS")
-    print(f"IN: {datetime.strftime(in_time, FMT)}")
-    print(f"OUT: {datetime.strftime(out_time, FMT)}")
-    print(f"Hours worked: {round(hours_worked.seconds/3600, 2)}")
-    print(f"1.5x hours: {round(hours_150.seconds/3600, 2)}")
-    print(f"2x hours: {round(hours_200.seconds/3600, 2)}")
-    print()
-    print("PAY")
-    print(f"Day rate: {day_rate}")
-    print(f"1.5x pay: {pay_150}")
-    print(f"2x pay: {pay_200}")
-    print(f"Total pay: {total_pay}")
+    print(job_tc)
 
     return total_pay
 
 
-def get_rate(day_rate: int | float, guaranteed: int | float, factor=1.5) -> float:
-    """Returns hourly overtime rate rounded to two decimal places.
-    """
+class Rate:
+    """A class for defining a rate structure."""
 
-    guaranteed = guaranteed.seconds/3600
-    straight = STRAIGHT_TIME.seconds/3600
+    def __init__(self, day_rate: int | float, guarantee: int | float | timedelta, double_begins=None) -> None:
+        self.day_rate = day_rate 
+        self.guarantee = guarantee if isinstance(guarantee, timedelta) else timedelta(hours=guarantee)
+        self.double_begins = self.get_double_begins(self.guarantee) if double_begins == None else double_begins
+        self.guarantee_int = self.guarantee.seconds/3600
+        self.straight_int = STRAIGHT_TIME.seconds/3600
+        self.rate_100 = round(self.day_rate / (self.guarantee_int + ((self.guarantee_int - self.straight_int) * .5)) * 1, 2)
+        self.rate_150 = round(self.rate_100 * 1.5, 2)
+        self.rate_200 = round(self.rate_100 * 2, 2)
 
-    return round((day_rate / (guaranteed + ((guaranteed - straight) * .5)) * factor), 2)
-
-
-def get_hours(in_time: datetime, out_time: datetime, guaranteed: timedelta =None, 
-              overtime: float =None, double_begins: timedelta =None, 
-              total_overtime=False, lunch_duration=LUNCH) -> timedelta:
-    """Calculates hours worked.
-    """
-    # TODO: Error check input and create ability to accept 
-    # formatted string in addition to datetime, 
-    # search for better way than so many nested if statements (match?)
-
-    total_hours = (out_time - in_time) - lunch_duration
-
-    if guaranteed == None or overtime == None:
-        return total_hours
+    def get_double_begins(self, guarantee: timedelta):
+        """Sets default number of hours until 2x overtime begins."""
+        if guarantee <= timedelta(hours=10):
+            return timedelta(hours=12)
+        else:
+            return timedelta(hours=14)
     
-    
-    if not total_overtime:
+    def __str__(self):
+        return f"""
+        RATE STRUCTURE
+          1x: {self.rate_100}
+        1.5x: {self.rate_150}
+          2x: {self.rate_200}\n"""
 
-        if isinstance(double_begins, timedelta):
-            if 1 < overtime < 2:
-                if total_hours <= guaranteed:
-                    return ZERO
-                if total_hours < double_begins:
-                    return total_hours - guaranteed
-                return double_begins - guaranteed
-            if overtime >= 2:
-                if total_hours <= double_begins:
-                    return ZERO
-                return total_hours - double_begins
-            
-        if guaranteed >= GUAR_12:
-            if 1 < overtime < 2:
-                if total_hours > GUAR_10_200:
-                    return GUAR_12_200 - guaranteed
-                if total_hours <= guaranteed:
-                    return ZERO
-                return GUAR_12_200 - guaranteed
-            if overtime >= 2:
-                if total_hours <= GUAR_12_200:
-                    return ZERO
-                return total_hours - GUAR_12_200
 
-        if guaranteed < GUAR_12:
-            if 1 < overtime < 2:
-                if total_hours >= GUAR_10_200:
-                    return GUAR_10_200 - guaranteed
-                return total_hours - guaranteed
-            if overtime >= 2:
-                if total_hours <= GUAR_10_200:
-                    return ZERO
-                return total_hours - GUAR_10_200
+class Timecard(Rate):
+    """Methods and data structures for working with labor times."""
 
-              
-    if total_overtime:
+    # TODO: How to make it possible to pass a rate object or individual params? Use a tuple?
+    def __init__(self, day_rate: int | float, guarantee: timedelta, double_begins=None,
+                 lunch_duration=timedelta(minutes=30)) -> None:
+        super().__init__(day_rate=day_rate, guarantee=guarantee, double_begins=double_begins)
+        self.in_time =  self.get_times('IN') # In and out eventually become a dict, see timecard_dict.txt
+        self.out_time = self.get_times('OUT')
+        self.lunch_duration = lunch_duration
+        self.total_hours = (self.out_time - self.in_time) - lunch_duration
+        self.total_150 = self.get_hours(1.5, total_overtime=True)
+        self.total_200 = self.get_hours(2.0, total_overtime=True)
+        self.ot_150 = self.get_hours(1.5)
+        self.ot_200 = self.get_hours(2.0)
 
-        if isinstance(double_begins, timedelta):
-            if 1 < overtime < 2:
-                if total_hours <= guaranteed:
-                    return guaranteed - STRAIGHT_TIME
-                if total_hours < double_begins:
-                    return total_hours - STRAIGHT_TIME
-                return double_begins - STRAIGHT_TIME
-            if overtime >= 2:
-                if total_hours <= double_begins:
-                    return ZERO
-                return total_hours - double_begins
-            
-        if guaranteed >= GUAR_12:
-            if 1 < overtime < 2:
-                if total_hours >= GUAR_12_200:
-                    return GUAR_12_200 - STRAIGHT_TIME
-                return total_hours - STRAIGHT_TIME
-            if overtime >= 2:
-                if total_hours <= GUAR_12_200:
-                    return ZERO
-                return total_hours - GUAR_12_200
-
-        if guaranteed < GUAR_12:
-            if 1 < overtime < 2:
-                if total_hours >= GUAR_10_200:
-                    return GUAR_10_200 - STRAIGHT_TIME
-                return total_hours - STRAIGHT_TIME
-            if overtime >= 2:
-                if total_hours <= GUAR_10_200:
-                    return ZERO
-                return total_hours - GUAR_10_200
+    def get_times(self, type: str) -> timedelta:
+        if type.upper() == 'OUT':
+            return datetime.strptime(input(f"OUT: "), FMT)
+        return datetime.strptime(input("IN: "), FMT)
         
-        if overtime <= 1 and total_hours < STRAIGHT_TIME:
-            return total_hours
-        return total_hours
+        
+    def get_hours(self, overtime: float,
+                  total_overtime=False) -> timedelta:
+        """Determines hours of overtime."""
+        # TODO: Error check input and create ability to accept 
+        # formatted string in addition to datetime
+        
+        if self.total_hours > self.double_begins:
+            hours_200_exist = True
+        else:
+            hours_200_exist = False
+        
+        match overtime, total_overtime, hours_200_exist:
+            case 1.5, False, True:
+                return self.total_hours - (self.total_hours - self.double_begins) - self.guarantee
+            case 1.5, True, True:
+                return self.total_hours - (self.total_hours - self.double_begins) - STRAIGHT_TIME
+            case 1.5, False, False:
+                return self.total_hours - self.guarantee
+            case 1.5, True, False:
+                return self.total_hours - STRAIGHT_TIME
+            case 2, True | False, True:
+                return self.total_hours - self.double_begins
+            case 2, True | False, False:
+                return timedelta(hours=0)
+            case _:
+                return None
     
+    def __str__(self):
+        return f"""{super().__str__()}
+            HOURS
+           IN: {datetime.strftime(self.in_time, FMT)}
+          OUT: {datetime.strftime(self.out_time, FMT)}
+  Total hours: {round(self.total_hours.seconds/3600, 2)}
+1.5x overtime: {round(self.ot_150.seconds/3600, 2)}
+  2x overtime: {round(self.ot_200.seconds/3600, 2)}
+   1.5x total: {round(self.total_150.seconds/3600, 2)}
+     2x total: {round(self.total_200.seconds/3600, 2)}"""
 
+
+# TODO: Create invoice subclass for pay calculations, subclass of Timecard
+# How to make it possible to pass a Timecard object or individual params?
 def get_pay(rate: int | float, hours: timedelta):
     return round(rate * (hours.seconds/3600), 2)
-        
+
 
 if __name__ == "__main__":
     main()
