@@ -1,10 +1,6 @@
 """Module for working with common film industry day rates with methods for overtime and payments.
 
 Version 0.1.2
-- Introduces the Invoice class which replaces the pay() function
-- Timecard is no longer a subclass of Rate
-- Enables Rate object to be passed to Timecard class
-- Enables Timecard object to be passed to Invoice class
 - Adds __str__ methods to classes"""
 
 from sys import exit
@@ -85,8 +81,6 @@ class Timecard(Rate):
     def get_hours(self, overtime: float,
                   total_overtime=False) -> timedelta:
         """Determines hours of overtime."""
-        # TODO: Error check input and create ability to accept 
-        # formatted string in addition to datetime
         
         if self.total_hours > self.double_begins:
             hours_200_exist = True
