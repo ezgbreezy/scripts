@@ -1,4 +1,4 @@
-"""Unit tests for rate.py Version 0.0.3
+"""Unit tests for rate.py Version 0.1.2
 
 Last updated 9/26/2023"""
 
